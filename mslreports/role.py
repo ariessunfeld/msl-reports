@@ -1,32 +1,52 @@
 import re
-
 import requests
 from bs4 import BeautifulSoup
-
 from . import config
 from .report import Report
 
 class Role:
 	"""Base class for MSL Reports Roles"""
-
 	REPORT_CLASS = Report
-	NAME = None # name as appears on MSL Reports
-	DESCRIPTION = None # longer role description
-	SUBSYSTEM_CODE = None # numeric code for this role's report page
-	ATTACHMENTS_CODE = None # numeric code for this role's attachments page
-	CATEGORY = None # uplink / downlink
+	NAME = None  # name as appears on MSL Reports
+	DESCRIPTION = None  # longer role description
+	SUBSYSTEM_CODE = None  # numeric code for this role's report page
+	CATEGORY = None  # uplink / downlink
 	BASE_URL_REPORT = "https://mslreports.jpl.nasa.gov/surface/reports/surface.php?category={}&subsystem={}&sol={}"
 	BASE_URL_TOPIC = "https://mslreports.jpl.nasa.gov/surface/reports/surface.php?category={}&subsystem={}&sol={}&topic={}"
 	BASE_URL_ATTACHMENT = "https://mslreports.jpl.nasa.gov/surface/data/surface/{}/{}/"
 
+	def __init__(self):
+		pass
+
 	@classmethod
-	def get_report(cls, sol):
-		# Access the username and password as:
+	def get_report(cls, sol: int) -> REPORT_CLASS:
+		"""Returns the Report for this Role on the given Sol
+
+		Arguments:
+			sol (int): The martian solar day for the report
+
+		Returns: cls.REPORT_CLASS(sol, cls.NAME, topics_dict), where
+			REPORT_CLASS is a subclass of Report,
+			cls.NAME is the name the Role,
+			topics_dict is a dictionary of topic content parsed from the report page
+				(E.g., {'contacts': '...', 'summary': '...', 'issues':, '...'})
+		"""
+		config.logger.debug(f"Entered get_report with args {sol=}")
+
 		session = config.session
+
 		if session is None:
-			raise Exception("Must connect to MSL Reports with mslreports.connect() before making requests.")
+			err = "Must connect to MSL Reports using mslreports.connect() before making requests."
+			config.logger.critical(err)
+			raise Exception(err)
+
 		report_url = cls._format_report_page_url(sol)
 		response = session.get(report_url)
+		topics = cls._extract_topics_from_response(session, response, sol)
+		return cls.REPORT_CLASS(sol, cls.NAME, topics)
+
+	@classmethod
+	def _extract_topics_from_response(cls, session, response, sol):
 		if response.status_code == 200:
 			topic_dict = {}
 			soup = BeautifulSoup(response.content, 'html.parser')
@@ -38,28 +58,28 @@ class Role:
 				topic_response = session.get(report_topic_url)
 				topic_soup = BeautifulSoup(topic_response.content, 'html.parser')
 				topic_text = cls._extract_text_from_topic(topic_soup)
-				topic_text = re.sub(r'\n+', '\n', topic_text)
 				if topic_text.strip():
 					topic_dict[topic] = topic_text
-			return cls.REPORT_CLASS(sol, cls.NAME, topic_dict)
+			return topic_dict
 		else:
-			raise Exception(f"Encountered a bad status code: {response.status_code}")
-
+			err = f"Encountered a bad status code: {response.status_code}"
+			config.logger.critical(err)
+			raise Exception(err)
 
 	@classmethod
 	def _format_attachments_url(cls, sol):
-		return cls.BASE_URL_ATTACHMENT.format(cls.ATTACHMENTS_CODE, sol)
+		return cls.BASE_URL_ATTACHMENT.format(cls.SUBSYSTEM_CODE, sol)
 
 	@classmethod
 	def _format_report_page_url(cls, sol):
 		return cls.BASE_URL_REPORT.format(cls.CATEGORY, cls.SUBSYSTEM_CODE, sol)
-	
+
 	@classmethod
 	def _format_report_page_topic_url(cls, sol, topic):
 		return cls.BASE_URL_TOPIC.format(cls.CATEGORY, cls.SUBSYSTEM_CODE, sol, topic)
 
 	@classmethod
-	def _find_all_topics(cls, soup : BeautifulSoup):
+	def _find_all_topics(cls, soup: BeautifulSoup):
 		"""Returns list of topics parsed from div"""
 		target_div = soup.find('div', style="margin:30px 5px 0 5px;")
 		if target_div:
@@ -75,15 +95,21 @@ class Role:
 			return None
 
 	@classmethod
-	def _extract_text_from_topic(cls, soup : BeautifulSoup):
-		
+	def _extract_text_from_topic(cls, soup: BeautifulSoup):
 		report_div = soup.find('div', class_='report_text')
-		
+
 		if not report_div:
 			return None
 
 		text_parts = []
 		for child in report_div.children:
-			text_parts.append(child.get_text())
+			text_part = child.get_text()
+			text_part = re.sub(r'\n+', '\n', text_part)
+			text_parts.append(text_part)
 
-		return ' '.join(text_parts).strip().replace('\u00a0', ' ').replace('\xa0', ' ')
+		ret = ' '.join(text_parts).strip().replace('\u00a0', ' ').replace('\xa0', ' ')
+		ret = ret.replace('\r\n', '\n')
+		ret = re.sub(r'\n+', '\n', ret)
+		ret = '\n'.join([line.strip() for line in ret.split('\n') if line.strip()])
+		ret = re.sub(r'\n+', '\n', ret)
+		return ret
