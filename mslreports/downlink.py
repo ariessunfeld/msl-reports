@@ -38,4 +38,8 @@ from .role import Role
 # class ACE(Role): pass
 
 class ChemCamSPDL(Role):
-	pass
+	NAME = None # name as appears on MSL Reports
+	DESCRIPTION = None # longer role description
+	SUBSYSTEM_CODE = 118 # numeric code for this role's report page
+	ATTACHMENTS_CODE = None # numeric code for this role's attachments page
+	CATEGORY = 'downlink' # uplink / downlink

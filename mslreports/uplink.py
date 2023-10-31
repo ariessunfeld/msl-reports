@@ -1,8 +1,11 @@
+import re
+
 import requests
 from bs4 import BeautifulSoup
 
 from . import config
 from .role import Role
+from .report import Report
 
 # class IssuesForNextPlan: pass
 # class SolScenario: pass
@@ -34,4 +37,41 @@ from .role import Role
 # class REMSPUL: pass
 # class SAMPUL: pass
 
-class ChemCamPUL(Role)
+class ChemCamSPULReport(Report):
+    def __init__(self, sol, role, topics):
+        super().__init__(sol, role, topics)
+        self.details = None
+        if 'summary' in self.topics:
+            setattr(self, 'details', self._parse_details_from_summary())
+
+    def _parse_details_from_summary(self):
+        summary = self.summary
+        details_section_future = summary.split('Details', 1)
+        if len(details_section_future) > 1:
+            details_section_future = details_section_future[1]
+            details_section = details_section_future.split('N+1')[0]
+            #sequences = details_section.split("SeqId:")
+            sequences = self.split_on_seq_id(details_section)
+            all_sequences = []
+            if len(sequences) > 1:
+                for sequence in sequences[1:]:  # skip the first split as it's before the first SeqId
+                    sequence = 'SeqID: ' + sequence.lstrip().lstrip(':')
+                    lines = sequence.strip().split("\n")
+                    seq_dict = {}
+                    for line in lines:
+                        if ':' in line:
+                            key, value = line.split(":", 1)  # split by the first occurrence of ': '
+                            seq_dict[key.strip()] = value.strip()
+                    all_sequences.append(seq_dict)
+            return all_sequences
+
+    @staticmethod
+    def split_on_seq_id(text):
+        # Using the case-insensitive flag (?i)
+        return re.split(r'(?i)SeqID:', text)
+
+
+class ChemCamSPUL(Role):
+    SUBSYSTEM_CODE = 116
+    CATEGORY = 'uplink'
+    REPORT_CLASS = ChemCamSPULReport
