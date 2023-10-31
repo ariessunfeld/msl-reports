@@ -40,10 +40,35 @@ class Role:
 			config.logger.critical(err)
 			raise Exception(err)
 
+		# Parse topics as dictionary
 		report_url = cls._format_report_page_url(sol)
 		response = session.get(report_url)
 		topics = cls._extract_topics_from_response(session, response, sol)
-		return cls.REPORT_CLASS(sol, cls.NAME, topics)
+
+		# Parse attachments as list
+		attachments_url = cls._format_attachments_url(sol)
+		response = session.get(attachments_url)
+		attachments = cls._extract_attachments_from_response(response, attachments_url)
+
+		return cls.REPORT_CLASS(sol, cls, topics, attachments)
+
+	@classmethod
+	def _extract_attachments_from_response(cls, response, attachments_url):
+		def link_filter(link):
+			if link.startswith('?') or link.endswith('/') or link.startswith('THUMB'):
+				return False
+			return True
+
+		if response.status_code == 200:
+			soup = BeautifulSoup(response.content, 'html.parser')
+			links = soup.find_all('a')
+			attachments_future = [link['href'] for link in links]
+			return {link: f'{attachments_url}{link}' for link in filter(link_filter, attachments_future)}
+		else:
+			err = f"Encountered a bad status code listing attachments: {response.status_code}"
+			config.logger.critical(err)
+			raise Exception(err)
+
 
 	@classmethod
 	def _extract_topics_from_response(cls, session, response, sol):
@@ -62,7 +87,7 @@ class Role:
 					topic_dict[topic] = topic_text
 			return topic_dict
 		else:
-			err = f"Encountered a bad status code: {response.status_code}"
+			err = f"Encountered a bad status code extracting topics: {response.status_code}"
 			config.logger.critical(err)
 			raise Exception(err)
 

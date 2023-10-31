@@ -39,8 +39,8 @@ from .report import Report
 #	class SAMPUL: pass
 
 class ChemCamSPULReport(Report):
-    def __init__(self, sol, role, topics):
-        super().__init__(sol, role, topics)
+    def __init__(self, sol, role, topics, attachments):
+        super().__init__(sol, role, topics, attachments)
         self.details = None
         if 'summary' in self.topics:
             setattr(self, 'details', self._parse_details_from_summary())
