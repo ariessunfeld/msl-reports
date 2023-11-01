@@ -1,6 +1,10 @@
+"""Base class for MSL Reports Roles"""
+
 import re
+
 import requests
 from bs4 import BeautifulSoup
+
 from . import config
 from .report import Report
 
