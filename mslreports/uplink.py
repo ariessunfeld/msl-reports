@@ -1,3 +1,9 @@
+"""Concrete Report and Role classes for all Uplink roles
+
+TODO: Define concrete Role subclasses for all Uplink roles
+TODO: Add parsing logic to Report subclasses as necessary (see ChemCamSPULReport example)
+"""
+
 import re
 
 import requests
@@ -6,37 +12,36 @@ from bs4 import BeautifulSoup
 from . import config
 from .role import Role
 from .report import Report
+from .constants import UPLINK_CODES
 
-
-#	class IssuesForNextPlan: pass
-#	class SolScenario: pass
-#	class SeqDeviations: pass
-#	class IPESupraTactical: pass
-#	class MissionLead: pass
-#	class TacticalUplinkLead: pass
-#	class EngineeringUplinkLead: pass
-#	class SciencePlanner: pass
-#	class SequenceIntegrationEngineer: pass
-#	class DataManagement: pass
-#	class RoverPlanner: pass
-#	class SOWGChairSUR: pass
-#	class SOWGDocumentarian: pass
-#	class LongTermPlanner: pass
-#	class SSSScientist: pass
-#	class SurfacePropertiesScientist: pass
-#	class APXSPUL: pass
-#	class ChemCamEPUL: pass
-#	[X]	class ChemCamSPUL: pass
-#	class CheMinPUL: pass
-#	class DANPUL: pass
-#	class ECAMPUL: pass
-#	class MastcamPUL: pass
-#	class MAHLIPUL: pass
-#	class MARDIPUL: pass
-#	class MMMMTL: pass
-#	class RADIUSPUL: pass
-#	class REMSPUL: pass
-#	class SAMPUL: pass
+class IssuesForNextPlanReport(Report): pass
+class SolScenarioReport(Report): pass
+class SeqDeviationsReport(Report): pass
+class IPESupraTacticalReport(Report): pass
+class MissionLeadReport(Report): pass
+class TacticalUplinkLeadReport(Report): pass
+class EngineeringUplinkLeadReport(Report): pass
+class SciencePlannerReport(Report): pass
+class SequenceIntegrationEngineerReport(Report): pass
+class DataManagementReport(Report): pass
+class RoverPlannerReport(Report): pass
+class SOWGChairSURReport(Report): pass
+class SOWGDocumentarianReport(Report): pass
+class LongTermPlannerReport(Report): pass
+class SSSScientistReport(Report): pass
+class SurfacePropertiesScientistReport(Report): pass
+class APXSPULReport(Report): pass
+class ChemCamEPULReport(Report): pass
+class CheMinPULReport(Report): pass
+class DANPULReport(Report): pass
+class ECAMPULReport(Report): pass
+class MastcamPULReport(Report): pass
+class MAHLIPULReport(Report): pass
+class MARDIPULReport(Report): pass
+class MMMMTLReport(Report): pass
+class RADIUSPULReport(Report): pass
+class REMSPULReport(Report): pass
+class SAMPULReport(Report): pass
 
 class ChemCamSPULReport(Report):
     def __init__(self, sol, role, topics, attachments):
@@ -76,9 +81,46 @@ class ChemCamSPUL(Role):
     REPORT_CLASS = ChemCamSPULReport
     NAME = "ChemCam Science PUL"  # name as appears on MSL Reports
     DESCRIPTION = "The ChemCam Science Payload Uplink Lead Role"  # longer role description
-    SUBSYSTEM_CODE = 116  # numeric code for this role's report page
+    SUBSYSTEM_CODE = UPLINK_CODES[NAME]  # numeric code for this role's report page
     CATEGORY = 'uplink'  # uplink / downlink
 
     @classmethod
     def get_report(cls, sol: int) -> ChemCamSPULReport:
         return super().get_report(sol)
+
+
+class ChemCamEPUL(Role):
+    REPORT_CLASS = ChemCamEPULReport
+    NAME = "ChemCam Eng PUL"  # name as appears on MSL Reports
+    DESCRIPTION = "The ChemCam Engineering Payload Uplink Lead Role"  # longer role description
+    SUBSYSTEM_CODE = UPLINK_CODES[NAME]  # numeric code for this role's report page
+    CATEGORY = 'uplink'  # uplink / downlink
+
+    @classmethod
+    def get_report(cls, sol: int) -> ChemCamEPULReport:
+        return super().get_report(sol)
+
+
+class MastcamPUL(Role):
+    REPORT_CLASS = MastcamPULReport
+    NAME = "Mastcam PUL"  # name as appears on MSL Reports
+    DESCRIPTION = "The Mastcam Payload Uplink Lead Role"  # longer role description
+    SUBSYSTEM_CODE = UPLINK_CODES[NAME]  # numeric code for this role's report page
+    CATEGORY = 'uplink'  # uplink / downlink
+
+    @classmethod
+    def get_report(cls, sol: int) -> MastcamPULReport:
+        return super().get_report(sol)
+
+
+class APXSPUL(Role):
+    REPORT_CLASS = APXSPULReport
+    NAME = "APXS PUL"  # name as appears on MSL Reports
+    DESCRIPTION = "The Alpha Particle Xray Spectrometer (APXS) Payload Uplink Lead Role"  # longer role description
+    SUBSYSTEM_CODE = UPLINK_CODES[NAME]  # numeric code for this role's report page
+    CATEGORY = 'uplink'  # uplink / downlink
+
+    @classmethod
+    def get_report(cls, sol: int) -> APXSPULReport:
+        return super().get_report(sol)
+

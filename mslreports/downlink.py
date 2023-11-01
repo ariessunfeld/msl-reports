@@ -1,49 +1,94 @@
+"""Concrete Report and Role classes for all Downlink roles
+
+TODO: Define concrete Role subclasses for all Downlink roles
+TODO: Add parsing logic to Report subclasses as necessary (see .uplink.ChemCamSPULReport for example)
+"""
+
 import requests
 from bs4 import BeautifulSoup
 
 from . import config
 from .role import Role
 from .report import Report
+from .constants import DOWNLINK_CODES
 
-#	class Issues(Role): pass
-#	class MissionLead(Role): pass
-#	class TacticalDownlinkLead(Role): pass
-#	class Systems(Role): pass
-#	class ActivityLead(Role): pass
-#	class SAPP(Role): pass
-#	class DataManagement(Role): pass
-#	class Mechanisms(Role): pass
-#	class Mobility(Role): pass
-#	class Power(Role): pass
-#	class SASPAh(Role): pass
-#	class Telecom(Role): pass
-#	class Thermal(Role): pass
-#	class Testbed(Role): pass
-#	class LocalizationScientist(Role): pass
-#	class PayloadDownlinkCoordinator(Role): pass
-#	class APXSPDL(Role): pass
-#	class ChemCamEPDL(Role): pass
-#	[X]	class ChemCamSPDL(Role): pass
-#	class CheMinPDL(Role): pass
-#	class DANPDL(Role): pass
-#	class ECAMPDL(Role): pass
-#	class MastcamPDL(Role): pass
-#	class MMMMDM(Role): pass
-#	class MAHLIPDL(Role): pass
-#	class MARDIPDL(Role): pass
-#	class RADPDL(Role): pass
-#	class REMSPDL(Role): pass
-#	class SAMPDL(Role): pass
-#	class OPGSPipelineOps(Role): pass
-#	class GroundDataSystemAnalyst(Role): pass
-#	class ACE(Role): pass
+class IssuesReport(Report): pass
+class MissionLeadReport(Report): pass
+class TacticalDownlinkLeadReport(Report): pass
+class SystemsReport(Report): pass
+class ActivityLeadReport(Report): pass
+class SAPPReport(Report): pass
+class DataManagementReport(Report): pass
+class MechanismsReport(Report): pass
+class MobilityReport(Report): pass
+class PowerReport(Report): pass
+class SASPAhReport(Report): pass
+class TelecomReport(Report): pass
+class ThermalReport(Report): pass
+class TestbedReport(Report): pass
+class LocalizationScientistReport(Report): pass
+class PayloadDownlinkCoordinatorReport(Report): pass
+class APXSPDLReport(Report): pass
+class ChemCamEPDLReport(Report): pass
+class ChemCamSPDLReport(Report): pass
+class CheMinPDLReport(Report): pass
+class DANPDLReport(Report): pass
+class ECAMPDLReport(Report): pass
+class MastcamPDLReport(Report): pass
+class MMMMDMReport(Report): pass
+class MAHLIPDLReport(Report): pass
+class MARDIPDLReport(Report): pass
+class RADPDLReport(Report): pass
+class REMSPDLReport(Report): pass
+class SAMPDLReport(Report): pass
+class OPGSPipelineOpsReport(Report): pass
+class GroundDataSystemAnalystReport(Report): pass
+class ACEReport(Report): pass
 
-class ChemCamSPDLReport(Report):
-	pass
 
 class ChemCamSPDL(Role):
-	NAME = None # name as appears on MSL Reports
-	DESCRIPTION = None # longer role description
-	SUBSYSTEM_CODE = 118 # numeric code for this role's report page
-	ATTACHMENTS_CODE = None # numeric code for this role's attachments page
-	CATEGORY = 'downlink' # uplink / downlink
+    REPORT_CLASS = ChemCamSPDLReport
+    NAME = "ChemCam Science PDL"  # name as appears on MSL Reports
+    DESCRIPTION = "The ChemCam Science Payload Downlink Lead Role"  # longer role description
+    SUBSYSTEM_CODE = DOWNLINK_CODES[NAME]  # numeric code for this role's report page
+    CATEGORY = 'downlink'  # uplink / downlink
+
+    @classmethod
+    def get_report(cls, sol: int) -> ChemCamSPDLReport:
+        return super().get_report(sol)
+
+
+class ChemCamEPDL(Role):
+    REPORT_CLASS = ChemCamEPDLReport
+    NAME = "ChemCam Eng PDL"  # name as appears on MSL Reports
+    DESCRIPTION = "The ChemCam Engineering Payload Downlink Lead Role"  # longer role description
+    SUBSYSTEM_CODE = DOWNLINK_CODES[NAME]  # numeric code for this role's report page
+    CATEGORY = 'downlink'  # uplink / downlink
+
+    @classmethod
+    def get_report(cls, sol: int) -> ChemCamEPDLReport:
+        return super().get_report(sol)
+
+
+class MastcamPDL(Role):
+    REPORT_CLASS = MastcamPDLReport
+    NAME = "Mastcam PDL"  # name as appears on MSL Reports
+    DESCRIPTION = "The Mastcam Payload Downlink Lead Role"  # longer role description
+    SUBSYSTEM_CODE = DOWNLINK_CODES[NAME]  # numeric code for this role's report page
+    CATEGORY = 'downlink'  # uplink / downlink
+
+    @classmethod
+    def get_report(cls, sol: int) -> MastcamPDLReport:
+        return super().get_report(sol)
+
+
+class MAHLIPDL(Role):
+    REPORT_CLASS = MAHLIPDLReport
+    NAME = "MAHLI PDL"  # name as appears on MSL Reports
+    DESCRIPTION = "The MArs Hand-Lens Imager Payload Downlink Lead Role"  # longer role description
+    SUBSYSTEM_CODE = DOWNLINK_CODES[NAME]  # numeric code for this role's report page
+    CATEGORY = 'downlink'  # uplink / downlink
+
+    @classmethod
+    def get_report(cls, sol: int) -> MAHLIPDLReport:
+        return super().get_report(sol)
