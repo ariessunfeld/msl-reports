@@ -26,7 +26,46 @@ class SASPAhReport(Report): pass
 class TelecomReport(Report): pass
 class ThermalReport(Report): pass
 class TestbedReport(Report): pass
-class LocalizationScientistReport(Report): pass
+class LocalizationScientistReport(Report):
+    def __init__(self, sol, role, topics, attachments):
+        super().__init__(sol, role, topics, attachments)
+        self.target_map = None
+        if self.attachments:
+            setattr(self, 'target_map', self.get_target_map())
+
+    def get_target_map(self, sol=None):
+        """Returns the target map covering `sol` from this report's attachments
+
+        Parses the attachments and checks if the MSL_Targets*.jpg file for the corresponding
+        sol is present; returns the link if found, None otherwise. Assumes that the
+        file has a name like 'MSL_Targets_solXXXX-XXXX_*.jpg' (or jpeg or png)
+
+        Arguments:
+            sol (int): The target sol
+
+        Returns:
+            attachment name if found; None otherwise
+        """
+        if sol is None:
+            sol = int(self.sol)
+        else:
+            sol = int(sol)
+        for attachment in self.attachments:
+            if attachment.startswith('MSL_Targets_sol') and self._is_image(attachment):
+                sol_part = attachment.split('MSL_Targets_sol')[1].split('_')[0]
+                if '-' in sol_part:
+                    lower_bound = int(sol_part.split('-')[0])
+                    upper_bound = int(sol_part.split('-')[1])
+                    if sol in range(lower_bound, upper_bound + 1):
+                        return attachment  # This image contains data including `sol`
+                else:
+                    if sol == int(sol_part):
+                        return attachment  # This image contains data only for `sol`
+        return None
+    @staticmethod
+    def _is_image(attachment):
+        image_types = ['.jpg', '.jpeg', '.png']
+        return any(attachment.lower().endswith(image_type) for image_type in image_types)
 class PayloadDownlinkCoordinatorReport(Report): pass
 class APXSPDLReport(Report): pass
 class ChemCamEPDLReport(Report): pass
@@ -46,6 +85,9 @@ class GroundDataSystemAnalystReport(Report): pass
 class ACEReport(Report): pass
 
 
+#  -----------------------------------------------
+
+
 class ChemCamSPDL(Role):
     REPORT_CLASS = ChemCamSPDLReport
     NAME = "ChemCam Science PDL"  # name as appears on MSL Reports
@@ -54,8 +96,8 @@ class ChemCamSPDL(Role):
     CATEGORY = 'downlink'  # uplink / downlink
 
     @classmethod
-    def get_report(cls, sol: int) -> ChemCamSPDLReport:
-        return super().get_report(sol)
+    def get_report(cls, *args, **kwargs) -> ChemCamSPDLReport:
+        return super().get_report(*args, **kwargs)
 
 
 class ChemCamEPDL(Role):
@@ -66,8 +108,8 @@ class ChemCamEPDL(Role):
     CATEGORY = 'downlink'  # uplink / downlink
 
     @classmethod
-    def get_report(cls, sol: int) -> ChemCamEPDLReport:
-        return super().get_report(sol)
+    def get_report(cls, *args, **kwargs) -> ChemCamEPDLReport:
+        return super().get_report(*args, **kwargs)
 
 
 class MastcamPDL(Role):
@@ -78,8 +120,8 @@ class MastcamPDL(Role):
     CATEGORY = 'downlink'  # uplink / downlink
 
     @classmethod
-    def get_report(cls, sol: int) -> MastcamPDLReport:
-        return super().get_report(sol)
+    def get_report(cls, *args, **kwargs) -> MastcamPDLReport:
+        return super().get_report(*args, **kwargs)
 
 
 class MAHLIPDL(Role):
@@ -90,5 +132,17 @@ class MAHLIPDL(Role):
     CATEGORY = 'downlink'  # uplink / downlink
 
     @classmethod
-    def get_report(cls, sol: int) -> MAHLIPDLReport:
-        return super().get_report(sol)
+    def get_report(cls, *args, **kwargs) -> MAHLIPDLReport:
+        return super().get_report(*args, **kwargs)
+
+
+class LocalizationScientist(Role):
+    REPORT_CLASS = LocalizationScientistReport
+    NAME = "Localization Scientist"  # name as appears on MSL Reports
+    DESCRIPTION = "The Rover Localization Scientist Role"  # longer role description
+    SUBSYSTEM_CODE = DOWNLINK_CODES[NAME]  # numeric code for this role's report page
+    CATEGORY = 'downlink'  # uplink / downlink
+
+    @classmethod
+    def get_report(cls, *args, **kwargs) -> LocalizationScientistReport:
+        return super().get_report(*args, **kwargs)

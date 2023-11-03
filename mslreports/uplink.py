@@ -77,6 +77,9 @@ class ChemCamSPULReport(Report):
         return re.split(r'(?i)SeqID:', text)
 
 
+#  -------------------------------------------------
+
+
 class ChemCamSPUL(Role):
     REPORT_CLASS = ChemCamSPULReport
     NAME = "ChemCam Science PUL"  # name as appears on MSL Reports
@@ -85,8 +88,8 @@ class ChemCamSPUL(Role):
     CATEGORY = 'uplink'  # uplink / downlink
 
     @classmethod
-    def get_report(cls, sol: int) -> ChemCamSPULReport:
-        return super().get_report(sol)
+    def get_report(cls, *args, **kwargs) -> ChemCamSPULReport:
+        return super().get_report(*args, **kwargs)
 
 
 class ChemCamEPUL(Role):
@@ -97,8 +100,8 @@ class ChemCamEPUL(Role):
     CATEGORY = 'uplink'  # uplink / downlink
 
     @classmethod
-    def get_report(cls, sol: int) -> ChemCamEPULReport:
-        return super().get_report(sol)
+    def get_report(cls, *args, **kwargs) -> ChemCamEPULReport:
+        return super().get_report(*args, **kwargs)
 
 
 class MastcamPUL(Role):
@@ -109,8 +112,8 @@ class MastcamPUL(Role):
     CATEGORY = 'uplink'  # uplink / downlink
 
     @classmethod
-    def get_report(cls, sol: int) -> MastcamPULReport:
-        return super().get_report(sol)
+    def get_report(cls, *args, **kwargs) -> MastcamPULReport:
+        return super().get_report(*args, **kwargs)
 
 
 class APXSPUL(Role):
@@ -121,6 +124,5 @@ class APXSPUL(Role):
     CATEGORY = 'uplink'  # uplink / downlink
 
     @classmethod
-    def get_report(cls, sol: int) -> APXSPULReport:
-        return super().get_report(sol)
-
+    def get_report(cls, *args, **kwargs) -> APXSPULReport:
+        return super().get_report(*args, **kwargs)

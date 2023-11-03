@@ -23,11 +23,14 @@ class Role:
 		pass
 
 	@classmethod
-	def get_report(cls, sol: int) -> REPORT_CLASS:
+	def get_report(cls, sol: int, parse_topics=True) -> REPORT_CLASS:
 		"""Returns the Report for this Role on the given Sol
 
 		Arguments:
 			sol (int): The martian solar day for the report
+			parse_topics (bool, True): Whether to parse topics.
+				Set to False for performance, if topics not needed.
+				~10x faster to return a report
 
 		Returns: cls.REPORT_CLASS(sol, cls.NAME, topics_dict), where
 			REPORT_CLASS is a subclass of Report,
@@ -45,9 +48,12 @@ class Role:
 			raise Exception(err)
 
 		# Parse topics as dictionary
-		report_url = cls._format_report_page_url(sol)
-		response = session.get(report_url)
-		topics = cls._extract_topics_from_response(session, response, sol)
+		if parse_topics:
+			report_url = cls._format_report_page_url(sol)
+			response = session.get(report_url)
+			topics = cls._extract_topics_from_response(session, response, sol)
+		else:
+			topics = {}
 
 		# Parse attachments as list
 		attachments_url = cls._format_attachments_url(sol)
@@ -68,6 +74,9 @@ class Role:
 			links = soup.find_all('a')
 			attachments_future = [link['href'] for link in links]
 			return {link: f'{attachments_url}{link}' for link in filter(link_filter, attachments_future)}
+		elif response.status_code == 404:
+			config.logger.info(f'Page does not exist: {attachments_url}')
+			return {}
 		else:
 			err = f"Encountered a bad status code listing attachments: {response.status_code}"
 			config.logger.critical(err)
@@ -136,7 +145,7 @@ class Role:
 			text_part = re.sub(r'\n+', '\n', text_part)
 			text_parts.append(text_part)
 
-		ret = ' '.join(text_parts).strip().replace('\u00a0', ' ').replace('\xa0', ' ')
+		ret = ' '.join(text_parts).strip().replace('\u00a0', ' ').replace('\xa0', ' ').replace('\u00b0', '°')
 		ret = ret.replace('\r\n', '\n')
 		ret = re.sub(r'\n+', '\n', ret)
 		ret = '\n'.join([line.strip() for line in ret.split('\n') if line.strip()])

@@ -3,6 +3,7 @@
 # Import standard library packages
 import os
 import json
+import time
 
 # Import dotenv for loading environment variables
 from dotenv import load_dotenv
@@ -12,6 +13,7 @@ import mslreports
 
 # Import specific Roles from MSLReports
 from mslreports.downlink import ChemCamSPDL
+from mslreports.downlink import LocalizationScientist
 from mslreports.uplink import ChemCamSPUL
 
 
@@ -85,8 +87,7 @@ rp_dl = ChemCamSPDL.get_report(1036)
 
 print('\nUploading...')
 
-ans = input('Do you really want to upload the file `test-upload.txt` to MSLReports? Y/[N] ')
-if ans.lower() in ['yes', 'y']:
+if input('Do you really want to upload the file `test-upload.txt` to MSLReports? Y/[N]: ').lower() in ['yes', 'y']:
 	mslreports.enable_uploading()
 	filename, dest = rp_dl.upload_attachment('test-upload.txt')
 	print('Uploaded', filename, 'to', dest)
@@ -94,3 +95,30 @@ else:
 	print('Skipping upload.')
 
 print('\n', '-'*30, sep='')
+
+
+# Finding a target map
+
+start = time.time()
+best_sol = 0
+best_tmap = None
+best_report = None
+for sol in range(3930, 3950):
+	# Note the use of parse_topics=False to speed up operations (10x faster)
+	rp = LocalizationScientist.get_report(sol, parse_topics=False)
+	tmap = rp.get_target_map(3940)
+	if tmap:
+		if sol > best_sol:
+			best_sol = sol
+			best_tmap = tmap
+			best_report = rp
+end = time.time()
+
+print(f'\nFound the latest target map for sol 3940 at: {best_sol=}, {best_tmap=}')
+print(f'Time taken: {round(end-start, 1)}s')
+
+if input('Do you want to download the target map? Y/[N]: ').lower() in ['y', 'yes']:
+	file = best_report.download_attachment(best_tmap, 'attachments')
+	print('Downloaded', file)
+else:
+	print('Will not download.')
