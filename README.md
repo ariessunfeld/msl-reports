@@ -13,5 +13,5 @@ mslreports.connect()
 
 rp = ChemCamSPUL.get_report(sol=3940)
 print(rp.contacts)
-print(rp.)
+print(dir(rp)) # see all attributes
 ```
