@@ -1,7 +1,7 @@
 # msl-reports
 
 # Install
-`pip install msl-reports`
+`pip install dist/msl_reports-0.0.0-py3-none-any.whl`
 
 # Usage
 ```
